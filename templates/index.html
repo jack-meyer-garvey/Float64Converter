@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binary Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 60px auto 0; /* Top margin pushes it down a bit */
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        h2, p {
+            text-align: center;
+        }
+        .button-group {
+    display: flex;
+    gap: 10px; /* space between buttons */
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    /* Base styling like your Convert button */
+    background-color: #007BFF;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Red style for toggle button */
+.btn-clear {
+    background-color: #dc3545; /* Bootstrap's red */
+}
+
+.btn-clear:hover {
+    background-color: #a71d2a;
+}
+#resultText {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#resultText.copied {
+    background-color: #d4edda; /* light green */
+    border-radius: 5px;
+    padding: 4px;
+}
+/* Yellow style for clear button */
+.btn-toggle  {
+    background-color: #ffc107; /* Bootstrap warning yellow */
+    color: black;
+}
+
+.btn-toggle:hover {
+    background-color: #e0a800;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enter a {{ input_type }}</h1>
+
+<form method="post" id="convertForm">
+    <input type="text" name="user_input" id="user_input" placeholder="{{ example }}" value="{{ user_input | default('') }}">
+    <input type="hidden" name="mode" id="modeInput" value="{{ mode | default('part_1') }}">
+
+    <div class="button-group">
+    <input type="submit" value="Convert" class="btn">
+    <button type="button" id="toggleModeBtn" class="btn btn-toggle">Switch to Binary Input</button>
+    <button type="button" id="clearBtn" class="btn btn-clear">Clear</button>
+</div>
+
+</form>
+
+
+
+        {% if result %}
+    <h2>Result:</h2>
+    <p id="resultText" style="cursor: pointer;" title="Click to copy">{{ result }}</p>
+    <p id="copyFeedback" style="color: green; display: none;">Copied!</p>
+{% endif %}
+
+
+    </div>
+<script>
+    const toggleBtn = document.getElementById('toggleModeBtn');
+    const modeInput = document.getElementById('modeInput');
+    const userInput = document.getElementById('user_input');
+    const inputLabel = document.querySelector('h1');
+
+    // Initial state: part_1 (expression input)
+    toggleBtn.addEventListener('click', () => {
+        if (modeInput.value === 'part_1') {
+            // Switch to binary input mode
+            modeInput.value = 'part_2';
+            inputLabel.textContent = 'Enter a 64-bit Binary String';
+            userInput.placeholder = 'e.g. 0100000000001001001000011111101101010100010001000010110100011000';
+            toggleBtn.textContent = 'Switch to Expression Input';
+        } else {
+            // Switch back to expression mode
+            modeInput.value = 'part_1';
+            inputLabel.textContent = 'Enter a Real Valued Expression';
+            userInput.placeholder = 'e.g. sqrt(2) or 3*pi';
+            toggleBtn.textContent = 'Switch to Binary Input';
+        }
+    });
+    const clearBtn = document.getElementById('clearBtn');
+
+clearBtn.addEventListener('click', () => {
+    userInput.value = '';
+    userInput.focus(); // optional: bring focus back to the input
+});
+
+</script>
+<script>
+    const resultText = document.getElementById('resultText');
+    const copyFeedback = document.getElementById('copyFeedback');
+
+    if (resultText) {
+    resultText.addEventListener('click', () => {
+        const text = resultText.innerText;
+
+        navigator.clipboard.writeText(text).then(() => {
+            // Visual feedback
+            resultText.classList.add('copied');
+            copyFeedback.style.display = 'block';
+
+            setTimeout(() => {
+                resultText.classList.remove('copied');
+                copyFeedback.style.display = 'none';
+            }, 1200);
+        });
+    });
+}
+
+</script>
+
+</body>
+</html>
