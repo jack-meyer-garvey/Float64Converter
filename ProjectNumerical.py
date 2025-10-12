@@ -1,199 +1,61 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Binary Converter</title>
-    <style>
-        .footer {
-    position: fixed;
-    bottom: 10px;
-    left: 15px;
-    color: #cccccc;
-    font-size: 19px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+from flask import Flask, render_template, request
+import struct
+import numpy as np
+import re
+convert_expr = lambda s: re.sub(r'\bpi\b', 'np.pi',
+                      re.sub(r'\^', '**',
+                      re.sub(r'\bsqrt\s*\(', 'np.sqrt(',
+                      re.sub(r'√\s*\(', 'np.sqrt(',
+                      re.sub(r'\bexp\s*\(', 'np.exp(',
+                      re.sub(r'\bcos\s*\(', 'np.cos(',
+                      re.sub(r'\bsin\s*\(', 'np.sin(', s)))))))
+float_to_bin64 = lambda x: format(struct.unpack('>Q', struct.pack('>d', x))[0], '064b')
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-        }
+def project_1_question_2_part_1(realNumberString):
+    expr = convert_expr(realNumberString)
+    if realNumberString == '':
+        return ''
+    try:
+        result = eval(expr, {"__builtins__": {}}, {"np": np})
+        return float_to_bin64(result)
+    except Exception:
+        return "Invalid Input for Real Number"
 
-        .container {
-            max-width: 600px;
-            margin: 60px auto 0; /* Top margin pushes it down a bit */
-            padding: 20px;
-            text-align: center;
-        }
+def project_1_question_2_part_2(binaryString):
+    if binaryString == '':
+        return ''
+    try: return str(struct.unpack('>d', struct.pack('>Q', int(binaryString, 2)))[0])
+    except Exception:
+        return "Invalid Input for Binary"
 
-        h1 {
-            margin-bottom: 20px;
-        }
+app = Flask(__name__)
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    result = None
+    text = ''
+    input_type = "Real Valued Expression"
+    example = "e.g. sqrt(2) or 3*pi"
+    mode = request.form.get('mode', 'part_1')
+    switch_type = 'Binary Input'
+    if request.method == 'POST':
+        text = request.form['user_input']
 
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        if mode == 'part_1':
+            func = project_1_question_2_part_1
+            input_type = "Real Valued Expression"
+            example = "e.g. sqrt(2) or 3*pi"
+            switch_type = 'Binary Input'
+        else:
+            func = project_1_question_2_part_2
+            input_type = "64-bit Binary String"
+            example = "e.g. 0100000000001001001000011111101101010100010001000010110100011000"
+            switch_type = 'Real Input'
 
-        input[type="text"] {
-            padding: 10px;
-            font-size: 16px;
-            width: 300px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+        result = func(text)
 
-        input[type="submit"] {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-
-        h2, p {
-            text-align: center;
-        }
-        .button-group {
-    display: flex;
-    gap: 10px; /* space between buttons */
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    /* Base styling like your Convert button */
-    background-color: #007BFF;
-    transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-    background-color: #0056b3;
-}
-
-/* Red style for toggle button */
-.btn-clear {
-    background-color: #dc3545; /* Bootstrap's red */
-}
-
-.btn-clear:hover {
-    background-color: #a71d2a;
-}
-#resultText {
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#resultText.copied {
-    background-color: #d4edda; /* light green */
-    border-radius: 5px;
-    padding: 4px;
-}
-/* Yellow style for clear button */
-.btn-toggle  {
-    background-color: #ffc107; /* Bootstrap warning yellow */
-    color: black;
-}
-
-.btn-toggle:hover {
-    background-color: #e0a800;
-}
-
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Enter a {{ input_type }}</h1>
-
-<form method="post" id="convertForm">
-    <input type="text" name="user_input" id="user_input" placeholder="{{ example }}" value="{{ user_input | default('') }}">
-    <input type="hidden" name="mode" id="modeInput" value="{{ mode | default('part_1') }}">
-
-    <div class="button-group">
-    <input type="submit" value="Convert" class="btn">
-    <button type="button" id="toggleModeBtn" class="btn btn-toggle">Switch to {{switch_type}}</button>
-    <button type="button" id="clearBtn" class="btn btn-clear">Clear</button>
-</div>
-
-</form>
+    return render_template('index.html', result=result, user_input=text, input_type=input_type,
+                           example=example, mode=mode, switch_type=switch_type)
 
 
-
-        {% if result %}
-    <h2>Result:</h2>
-    <p id="resultText" style="cursor: pointer;" title="Click to copy">{{ result }}</p>
-    <p id="copyFeedback" style="color: green; display: none;">Copied!</p>
-{% endif %}
-
-
-    </div>
-<script>
-    const toggleBtn = document.getElementById('toggleModeBtn');
-    const modeInput = document.getElementById('modeInput');
-    const userInput = document.getElementById('user_input');
-    const inputLabel = document.querySelector('h1');
-
-    // Initial state: part_1 (expression input)
-    toggleBtn.addEventListener('click', () => {
-        if (modeInput.value === 'part_1') {
-            // Switch to binary input mode
-            modeInput.value = 'part_2';
-            inputLabel.textContent = 'Enter a 64-bit Binary String';
-            userInput.placeholder = 'e.g. 0100000000001001001000011111101101010100010001000010110100011000';
-            toggleBtn.textContent = 'Switch to Real Input';
-        } else {
-            // Switch back to expression mode
-            modeInput.value = 'part_1';
-            inputLabel.textContent = 'Enter a Real Valued Expression';
-            userInput.placeholder = 'e.g. sqrt(2) or 3*pi';
-            toggleBtn.textContent = 'Switch to Binary Input';
-        }
-    });
-    const clearBtn = document.getElementById('clearBtn');
-
-clearBtn.addEventListener('click', () => {
-    userInput.value = '';
-    userInput.focus(); // optional: bring focus back to the input
-});
-
-</script>
-<script>
-    const resultText = document.getElementById('resultText');
-    const copyFeedback = document.getElementById('copyFeedback');
-
-    if (resultText) {
-    resultText.addEventListener('click', () => {
-        const text = resultText.innerText;
-
-        navigator.clipboard.writeText(text).then(() => {
-            // Visual feedback
-            resultText.classList.add('copied');
-            copyFeedback.style.display = 'block';
-
-            setTimeout(() => {
-                resultText.classList.remove('copied');
-                copyFeedback.style.display = 'none';
-            }, 1200);
-        });
-    });
-}
-
-</script>
-<div class="footer">By Jack, Michael, and Taha.</div>
-
-</body>
-</html>
+if __name__ == '__main__':
+    app.run()
