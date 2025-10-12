@@ -125,7 +125,7 @@
 
     <div class="button-group">
     <input type="submit" value="Convert" class="btn">
-    <button type="button" id="toggleModeBtn" class="btn btn-toggle">Switch to Binary Input</button>
+    <button type="button" id="toggleModeBtn" class="btn btn-toggle">Switch to {{switch_type}}</button>
     <button type="button" id="clearBtn" class="btn btn-clear">Clear</button>
 </div>
 
@@ -154,7 +154,7 @@
             modeInput.value = 'part_2';
             inputLabel.textContent = 'Enter a 64-bit Binary String';
             userInput.placeholder = 'e.g. 0100000000001001001000011111101101010100010001000010110100011000';
-            toggleBtn.textContent = 'Switch to Expression Input';
+            toggleBtn.textContent = 'Switch to Real Input';
         } else {
             // Switch back to expression mode
             modeInput.value = 'part_1';
