@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
     <title>Binary Converter</title>
     <style>
         .footer {
@@ -133,11 +138,27 @@
 
 
 
-        {% if result %}
+       {% if result %}
     <h2>Result:</h2>
     <p id="resultText" style="cursor: pointer;" title="Click to copy">{{ result }}</p>
     <p id="copyFeedback" style="color: green; display: none;">Copied!</p>
+    <button id="explainBtn" class="btn btn-toggle" style="margin-top: 10px;">Show Explanation</button>
+    <div id="explanation" style="display:none; text-align: left; margin-top: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+        <strong>Output Explanation:</strong>
+        <p>The 64-bit binary string is divided into three parts:</p>
+        <ul>
+            <li><strong>Sign bit (1 bit):</strong> The first bit indicates the sign (0 = positive, 1 = negative).</li>
+            <li><strong>Exponent (11 bits):</strong> The next 11 bits represent the biased exponent.</li>
+            <li><strong>Mantissa (52 bits):</strong> The remaining bits represent the fractional part (mantissa).</li>
+        </ul>
+        <p><strong>Value calculation formula:</strong></p>
+        <p style="font-size: 1.1em; text-align: center;">
+            $$x = (-1)^{\text{sign}} \times (1 + \text{mantissa}) \times 2^{\text{exponent} - 1023}$$
+        </p>
+        <p>where <code>sign</code> is the sign bit, <code>exponent</code> is the unsigned integer from the exponent bits, and <code>mantissa</code> is the fractional value from the mantissa bits.</p>
+    </div>
 {% endif %}
+
 
 
     </div>
@@ -189,6 +210,20 @@ clearBtn.addEventListener('click', () => {
                 copyFeedback.style.display = 'none';
             }, 1200);
         });
+    });
+}
+const explainBtn = document.getElementById('explainBtn');
+const explanationDiv = document.getElementById('explanation');
+
+if (explainBtn && explanationDiv) {
+    explainBtn.addEventListener('click', () => {
+        if (explanationDiv.style.display === 'none') {
+            explanationDiv.style.display = 'block';
+            explainBtn.textContent = 'Hide Explanation';
+        } else {
+            explanationDiv.style.display = 'none';
+            explainBtn.textContent = 'Show Explanation';
+        }
     });
 }
 
